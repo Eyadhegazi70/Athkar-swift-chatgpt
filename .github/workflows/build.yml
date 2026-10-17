@@ -25,20 +25,21 @@ jobs:
 
     - name: Build App & Create IPA
       run: |
-        # البناء للآيفون الحقيقي ليتوافق مع Sideloadly
+        # البناء للآيفون الحقيقي مع تفعيل التوقيع المؤقت (Ad-Hoc) لنجاح البناء
         xcodebuild -project AthkarApp.xcodeproj \
                    -scheme AthkarApp \
                    -sdk iphoneos \
                    -configuration Release \
                    -derivedDataPath build/DerivedData \
-                   CODE_SIGNING_ALLOWED=NO \
-                   CODE_SIGNING_REQUIRED=NO \
-                   CODE_SIGN_IDENTITY="" \
+                   CODE_SIGN_STYLE=Manual \
+                   CODE_SIGN_IDENTITY="-" \
+                   CODE_SIGNING_REQUIRED=YES \
+                   CODE_SIGNING_ALLOWED=YES \
                    build
 
-        # استخراج وتغليف الـ IPA
+        # استخراج وتغليف حزمة الـ IPA
         mkdir -p Payload
-        cp -R build/DerivedData/Build/Products/Release-iphoneos/Athkar.app Payload/ || cp -R build/DerivedData/Build/Products/Release-iphoneos/AthkarApp.app Payload/
+        cp -R build/DerivedData/Build/Products/Release-iphoneos/AthkarApp.app Payload/ || cp -R build/DerivedData/Build/Products/Release-iphoneos/Athkar.app Payload/
         zip -r AthkarApp.ipa Payload
 
     - name: Upload IPA Artifact
