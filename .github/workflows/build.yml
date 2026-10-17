@@ -25,7 +25,6 @@ jobs:
 
     - name: Build App & Create IPA
       run: |
-        # البناء لمنصة محاكي الآيفون لتفادي خطأ Code Signing
         xcodebuild -project AthkarApp.xcodeproj \
                    -scheme AthkarApp \
                    -sdk iphonesimulator \
@@ -36,9 +35,8 @@ jobs:
                    CODE_SIGN_IDENTITY="" \
                    build
 
-        # إنشاء مجلد Payload واستخراج حزمة الـ IPA
         mkdir -p Payload
-        cp -R build/DerivedData/Build/Products/Release-iphonesimulator/AthkarApp.app Payload/
+        cp -R build/DerivedData/Build/Products/Release-iphonesimulator/Athkar.app Payload/ || cp -R build/DerivedData/Build/Products/Release-iphonesimulator/AthkarApp.app Payload/
         zip -r AthkarApp.ipa Payload
 
     - name: Upload IPA Artifact
