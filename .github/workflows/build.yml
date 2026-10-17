@@ -1,0 +1,49 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: 'latest-stable'
+
+    - name: Build and Package IPA
+      run: |
+        # الحصول على مسار SDK الخاص بـ iOS
+        SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
+        
+        # بناء التطبيق مباشرة بـ Swift PM بدون مشاكل xcodeproj
+        swift build -c release \
+          -Xswiftc -sdk -Xswiftc "$SDK_PATH" \
+          -Xswiftc -target -Xswiftc arm64-apple-ios15.0
+        
+        # تجهيز مجلد الـ IPA
+        mkdir -p Payload/AthkarApp.app
+        
+        # نسخ الملف التنفيذي الناتج
+        cp .build/release/AthkarApp Payload/AthkarApp.app/AthkarApp
+        
+        # نسخ Info.plist لو موجود
+        if [ -f "Info.plist" ]; then
+          cp Info.plist Payload/AthkarApp.app/Info.plist
+        fi
+        
+        # ضغط الملف لإنشاء الـ .ipa
+        zip -r AthkarApp.ipa Payload
+
+    - name: Upload IPA Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AthkarApp-IPA
+        path: AthkarApp.ipa
