@@ -30,6 +30,7 @@ jobs:
                    -sdk iphonesimulator \
                    -configuration Release \
                    -derivedDataPath build/DerivedData \
+                   IPHONEOS_DEPLOYMENT_TARGET=17.0 \
                    CODE_SIGNING_ALLOWED=NO \
                    CODE_SIGNING_REQUIRED=NO \
                    CODE_SIGN_IDENTITY="" \
