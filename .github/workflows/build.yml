@@ -1,45 +1,31 @@
-name: Build iOS IPA
-
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: macos-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: 'latest-stable'
-
-    - name: Install XcodeGen and Generate Project
-      run: |
-        brew install xcodegen
-        xcodegen generate
-
-    - name: Build App & Create IPA
-      run: |
-        xcodebuild -project AthkarApp.xcodeproj \
-                   -scheme AthkarApp \
-                   -sdk iphoneos \
-                   -configuration Release \
-                   CODE_SIGN_IDENTITY="" \
-                   CODE_SIGNING_REQUIRED=NO \
-                   CODE_SIGNING_ALLOWED=NO \
-                   build
-
-        mkdir -p Payload
-        cp -R build/Release-iphoneos/AthkarApp.app Payload/
-        zip -r AthkarApp.ipa Payload
-
-    - name: Upload IPA Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: AthkarApp-IPA
-        path: AthkarApp.ipa
+name: AthkarApp
+options:
+  bundleIdPrefix: com.eyad
+targets:
+  AthkarApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: .
+        excludes:
+          - Package.swift
+          - project.yml
+          - Info.plist
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.eyad.athkarapp
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGNING_ALLOWED: NO
+      SWIFT_VERSION: "5.0"
+    info:
+      properties:
+        CFBundleIdentifier: com.eyad.athkarapp
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundleDisplayName: Athkar
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSLocationWhenInUseUsageDescription: "يحتاج التطبيق تحديد موقعك الحالي لحساب اتجاه القبلة بدقة."
