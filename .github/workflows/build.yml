@@ -18,28 +18,26 @@ jobs:
       with:
         xcode-version: 'latest-stable'
 
-    - name: Build and Package IPA
+    - name: Build iOS App via Xcodebuild
       run: |
-        # الحصول على مسار SDK الخاص بـ iOS
-        SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
-        
-        # بناء التطبيق مباشرة بـ Swift PM بدون مشاكل xcodeproj
-        swift build -c release \
-          -Xswiftc -sdk -Xswiftc "$SDK_PATH" \
-          -Xswiftc -target -Xswiftc arm64-apple-ios15.0
-        
-        # تجهيز مجلد الـ IPA
+        # بناء الحزمة لتستهدف آيفون وتتعرف على مكتبة UIKit
+        xcodebuild -scheme AthkarApp \
+                   -destination 'platform=iOS Simulator,name=iPhone 16' \
+                   -configuration Release \
+                   CODE_SIGN_IDENTITY="" \
+                   CODE_SIGNING_REQUIRED=NO \
+                   CODE_SIGNING_ALLOWED=NO \
+                   build || xcodebuild -sdk iphonesimulator -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+
+        # تجهيز مجلد الـ IPA الناتج
         mkdir -p Payload/AthkarApp.app
         
-        # نسخ الملف التنفيذي الناتج
-        cp .build/release/AthkarApp Payload/AthkarApp.app/AthkarApp
-        
-        # نسخ Info.plist لو موجود
+        # نسخ ملفات التطبيق والـ Info.plist
         if [ -f "Info.plist" ]; then
-          cp Info.plist Payload/AthkarApp.app/Info.plist
+          cp Info.plist Payload/AthkarApp.app/
         fi
-        
-        # ضغط الملف لإنشاء الـ .ipa
+
+        # ضغط المجلد لإنشاء ملف الـ .ipa
         zip -r AthkarApp.ipa Payload
 
     - name: Upload IPA Artifact
